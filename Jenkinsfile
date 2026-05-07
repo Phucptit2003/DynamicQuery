@@ -17,21 +17,21 @@ pipeline {
             steps {
                 echo 'Kiểm tra Docker...'
                 sh 'docker --version'
-                sh 'docker compose version || true'
+                sh 'docker-compose --version'
             }
         }
 
         stage('3. Build Docker Image') {
             steps {
                 echo 'Đang build Docker image...'
-                sh 'docker compose build app'
+                sh 'docker-compose build app'
             }
         }
 
         stage('4. Deploy App') {
             steps {
                 echo 'Đang deploy ứng dụng...'
-                sh 'docker compose up -d --force-recreate app'
+                sh 'docker-compose up -d --force-recreate app'
             }
         }
 
