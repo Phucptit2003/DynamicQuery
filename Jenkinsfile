@@ -17,21 +17,21 @@ pipeline {
             steps {
                 echo 'Kiểm tra Docker...'
                 sh 'docker --version'
-                sh 'docker-compose --version'
+                sh 'docker compose version'
             }
         }
 
         stage('3. Build Docker Image') {
             steps {
                 echo 'Đang build Docker image...'
-                sh 'docker-compose build app'
+                sh 'docker compose build app'
             }
         }
 
         stage('4. Deploy App') {
             steps {
                 echo 'Đang deploy ứng dụng...'
-                sh 'docker-compose up -d --force-recreate app'
+                sh 'docker compose up -d --force-recreate app'
             }
         }
 
@@ -45,7 +45,7 @@ pipeline {
 
     post {
         success {
-            echo '✅ Deploy thành công: http://localhost:8080'
+            echo '✅ Deploy thành công: http://<EC2-IP>:8080'
         }
         failure {
             echo '❌ Pipeline thất bại. Kiểm tra log!'
