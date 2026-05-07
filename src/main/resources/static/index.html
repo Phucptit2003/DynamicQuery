@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Oracle Query Builder | Premium</title>
+
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-body: #f8fafc;
+            --bg-card: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: var(--bg-card);
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        h2::before {
+            content: '⚡';
+            font-size: 1.2rem;
+        }
+
+        .section {
+            margin-bottom: 24px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: #fff;
+            transition: all 0.2s ease;
+        }
+
+        .section:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.05);
+        }
+
+        label b {
+            display: block;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Form Controls */
+        select, input[type="text"], input[type="number"], input[type="date"] {
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background-color: white;
+            color: var(--text-main);
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary);
+            ring: 2px solid rgba(79, 70, 229, 0.1);
+        }
+
+        /* Buttons */
+        button {
+            padding: 10px 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        button:not([style*="background"]) {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+        }
+
+        button:hover:not([style*="background"]) {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        /* Specific styles for types */
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            padding: 10px 0;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            background: var(--accent);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-group label:hover {
+            background: #e2e8f0;
+        }
+
+        .checkbox-group h4 {
+            grid-column: 1 / -1;
+            margin: 15px 0 5px 0;
+            font-size: 0.9rem;
+            color: var(--primary);
+        }
+
+        .condition-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* SQL Preview */
+        pre {
+            background: #1e293b;
+            color: #38bdf8;
+            padding: 20px;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.6;
+            border-left: 4px solid var(--primary);
+            overflow-x: auto;
+        }
+
+        /* Result Table */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: var(--accent);
+            color: var(--text-main);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-muted);
+        }
+
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background-color: #f8fafc; }
+
+        #resultError {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Trình Tạo Truy Vấn Cơ Sở Dữ Liệu</h2>
+
+    <!-- TABLE -->
+    <div class="section">
+        <label><b>1. Chọn Bảng:</b></label>
+        <select id="tableSelect" onchange="loadSchema()" style="width: 100%; max-width: 400px;"></select>
+    </div>
+
+    <!-- SELECT -->
+    <div class="section">
+        <label><b>2. Chọn Trường (SELECT):</b></label>
+        <div id="columnsContainer" class="checkbox-group"></div>
+    </div>
+
+    <!-- WHERE -->
+    <div class="section">
+        <label><b>3. Điều Kiện (WHERE):</b></label>
+        <div id="conditionsContainer"></div>
+        <button onclick="addCondition()" style="background-color: var(--accent); color: var(--text-main); border: 1px solid var(--border);">
+            + Thêm điều kiện
+        </button>
+    </div>
+
+    <!-- GROUP BY -->
+    <div class="section">
+        <label><b>4. Nhóm (GROUP BY):</b></label>
+        <div id="groupByContainer" class="checkbox-group"></div>
+    </div>
+
+    <!-- SQL -->
+    <div class="section" style="background: #fdfdfd;">
+        <label><b>SQL PREVIEW:</b></label>
+        <pre id="sqlPreview">-- Chờ lệnh...</pre>
+
+        <div style="margin-top: 20px;">
+            <button onclick="executeQuery()" style="background-color: var(--success); font-size:16px; padding:12px 25px; box-shadow: 0 4px 14px 0 rgba(16, 185, 129, 0.39);">
+                ▶ Thực thi truy vấn
+            </button>
+        </div>
+    </div>
+
+    <!-- RESULT -->
+    <div class="section">
+        <label><b>Kết Quả:</b></label>
+        <div id="resultError"></div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead><tr id="resultHead"></tr></thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    /* GIỮ NGUYÊN TOÀN BỘ LOGIC JAVASCRIPT CỦA BẠN DƯỚI ĐÂY */
+    let schemaMap = {};
+    let currentSchemaData = null;
+    let allColumns = [];
+
+    // LOAD TABLES
+    fetch('/api/tables')
+        .then(r=>r.json())
+        .then(data=>{
+            const select=document.getElementById('tableSelect');
+            select.innerHTML = `<option value="">-- Chọn bảng --</option>`;
+            data.forEach(t=>{
+                select.innerHTML+=`<option value="${t}">${t}</option>`;
+            });
+        });
+
+    // LOAD SCHEMA
+    function loadSchema(){
+        const table=document.getElementById('tableSelect').value;
+        if(!table) return;
+
+        fetch(`/api/tables/${table}/schema-with-joins`)
+            .then(r=>r.json())
+            .then(data=>{
+                currentSchemaData=data;
+                schemaMap={};
+                allColumns=[];
+
+                let colHtml='';
+                let groupHtml='';
+
+                const base=data.baseTable.tableName;
+
+                colHtml+=`<h4>Bảng Gốc: ${base}</h4>`;
+                groupHtml+=`<h4>Bảng Gốc: ${base}</h4>`;
+
+                data.baseTable.columns.forEach(c=>{
+                    const full=`${base}.${c.name}`;
+                    schemaMap[full]=c.dataType;
+                    allColumns.push(full);
+
+                    colHtml+=checkbox(full, c.name, 'select');
+                    groupHtml+=checkbox(full, c.name, 'group');
+                });
+
+                data.joinedTables.forEach(j=>{
+                    colHtml+=`<h4>Join: ${j.tableName}</h4>`;
+                    groupHtml+=`<h4>Join: ${j.tableName}</h4>`;
+
+                    j.columns.forEach(c=>{
+                        const full=`${j.tableName}.${c.name}`;
+                        schemaMap[full]=c.dataType;
+                        allColumns.push(full);
+
+                        colHtml+=checkbox(full, c.name, 'select');
+                        groupHtml+=checkbox(full, c.name, 'group');
+                    });
+                });
+
+                document.getElementById('columnsContainer').innerHTML=colHtml;
+                document.getElementById('groupByContainer').innerHTML=groupHtml;
+                document.getElementById('conditionsContainer').innerHTML='';
+
+                updatePreview();
+            });
+    }
+
+    function checkbox(value,label,type){
+        return `<label>
+        <input type="checkbox" data-type="${type}" value="${value}" onchange="onChange()"> ${label}
+    </label>`;
+    }
+
+    function onChange(){
+        syncGroupBy();
+        updatePreview();
+    }
+
+    function syncGroupBy(){
+        const selected = Array.from(
+            document.querySelectorAll('#columnsContainer input:checked')
+        ).map(x=>x.value);
+
+        document.querySelectorAll('#groupByContainer input').forEach(cb=>{
+            cb.checked = selected.includes(cb.value);
+        });
+    }
+
+    function getInput(col){
+        const type=schemaMap[col] || '';
+        if(type.includes('NUMBER')) return `<input type="number" class="cond-val" oninput="updatePreview()" placeholder="Giá trị...">`;
+        if(type.includes('DATE')) return `<input type="date" class="cond-val" oninput="updatePreview()">`;
+        return `<input type="text" class="cond-val" oninput="updatePreview()" placeholder="Giá trị...">`;
+    }
+
+    function addCondition(){
+        if(allColumns.length === 0) return alert("Chọn bảng trước!");
+        const div=document.createElement('div');
+        div.className='condition-row';
+        div.innerHTML=`
+        <select class="cond-col" onchange="changeInput(this)">
+            ${allColumns.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        </select>
+        <select class="cond-op" onchange="updatePreview()">
+            <option value="=">=</option>
+            <option value=">">></option>
+            <option value="<"><</option>
+            <option value="LIKE">LIKE</option>
+        </select>
+        ${getInput(allColumns[0])}
+        <button onclick="this.parentElement.remove();updatePreview()" style="background:var(--danger); color: white; border:none; padding: 8px 12px;">✕</button>
+    `;
+        document.getElementById('conditionsContainer').appendChild(div);
+    }
+
+    function changeInput(el){
+        const row=el.parentElement;
+        const col=el.value;
+        row.querySelector('.cond-val').outerHTML=getInput(col);
+    }
+
+    function formatValue(col,val){
+        const type=schemaMap[col] || '';
+        if(type.includes('NUMBER')) return val;
+        if(type.includes('DATE')) return `TO_DATE('${val}','YYYY-MM-DD')`;
+        return `'${val}'`;
+    }
+
+    function updatePreview(){
+        const table=document.getElementById('tableSelect').value;
+        if(!table) return;
+        const cols=[...document.querySelectorAll('#columnsContainer input:checked')].map(x=>x.value);
+        const group=[...document.querySelectorAll('#groupByContainer input:checked')].map(x=>x.value);
+        const conditions=[...document.querySelectorAll('.condition-row')]
+            .map(r=>{
+                const col=r.querySelector('.cond-col').value;
+                const op=r.querySelector('.cond-op').value;
+                const val=r.querySelector('.cond-val').value;
+                if(!val) return null;
+                return `${col} ${op} ${formatValue(col,val)}`;
+            }).filter(x=>x);
+
+        let sql=`SELECT ${cols.length?cols.join(', '):'*'}\nFROM ${table}`;
+        if(currentSchemaData){
+            currentSchemaData.joinedTables.forEach(j=>{
+                sql+=`\nLEFT JOIN ${j.tableName} ON ${table}.${j.baseColumn} = ${j.tableName}.${j.joinColumn}`;
+            });
+        }
+        if(conditions.length){
+            sql+=`\nWHERE ${conditions.join('\n  AND ')}`;
+        }
+        if(group.length){
+            sql+=`\nGROUP BY ${group.join(', ')}`;
+        }
+        document.getElementById('sqlPreview').innerText=sql;
+    }
+
+    function executeQuery(){
+        updatePreview();
+        const table = document.getElementById('tableSelect').value;
+        const selectedCols = Array.from(document.querySelectorAll('#columnsContainer input:checked')).map(cb => cb.value);
+        const groupByCols = Array.from(document.querySelectorAll('#groupByContainer input:checked')).map(cb => cb.value);
+        const joins = currentSchemaData.joinedTables.map(j => ({
+            joinTable: j.tableName,
+            baseColumn: j.baseColumn,
+            joinColumn: j.joinColumn
+        }));
+        const conditions = Array.from(document.querySelectorAll('.condition-row'))
+            .map(r => {
+                const col = r.querySelector('.cond-col').value;
+                const op = r.querySelector('.cond-op').value;
+                const val = r.querySelector('.cond-val').value;
+                if(!val) return null;
+                return { column: col, operator: op, value: val };
+            }).filter(x => x);
+
+        const request = {
+            tableName: table,
+            selectedColumns: selectedCols,
+            joins: joins,
+            conditions: conditions,
+            groupByColumns: groupByCols
+        };
+
+        fetch('/api/execute',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(request)
+        })
+            .then(res=>res.json())
+            .then(data=>{
+                const err=document.getElementById('resultError');
+                const head=document.getElementById('resultHead');
+                const body=document.getElementById('resultBody');
+                err.innerText=''; head.innerHTML=''; body.innerHTML='';
+
+                if(data.status==='error'){
+                    err.style.background = '#fef2f2';
+                    err.innerText=data.message;
+                    return;
+                }
+
+                if(data.data && data.data.length){
+                    const keys=Object.keys(data.data[0]);
+                    keys.forEach(k=>head.innerHTML+=`<th>${k}</th>`);
+                    data.data.forEach(row=>{
+                        let tr='<tr>';
+                        keys.forEach(k=>{ tr+=`<td>${row[k] ?? ''}</td>`; });
+                        tr+='</tr>';
+                        body.innerHTML+=tr;
+                    });
+                } else {
+                    body.innerHTML='<tr><td colspan="100%" style="text-align:center">Không có dữ liệu</td></tr>';
+                }
+            });
+    }
+</script>
+
+</body>
+</html>

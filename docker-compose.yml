@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  oracle-db:
+    image: gvenzl/oracle-free:latest
+    container_name: oracle_database
+    environment:
+      - ORACLE_PASSWORD=mypassword
+      - APP_USER=myuser
+      - APP_USER_PASSWORD=mypassword
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./init.sql:/container-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "echo 'SELECT 1 FROM DUAL;' | sqlplus -s system/mypassword@localhost:1521/FREEPDB1" ]
+      interval: 20s
+      timeout: 10s
+      retries: 10
+
+  app:
+    build: .
+    container_name: dynamic_query_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      oracle-db:
+        condition: service_healthy
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:oracle:thin:@oracle-db:1521/FREEPDB1
+      - SPRING_DATASOURCE_USERNAME=myuser
+      - SPRING_DATASOURCE_PASSWORD=mypassword
+
+volumes:
+  oracle-data:
